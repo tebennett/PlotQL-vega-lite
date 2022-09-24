@@ -5,7 +5,6 @@ import { createStore } from "solid-js/store";
 import { timeFormat, isoParse } from "d3-time-format";
 import YAML from "yaml";
 import * as R from "ramda";
-
 import "purecss/build/pure-min.css";
 
 import * as Aq from "arquero";
@@ -29,8 +28,8 @@ const VegaLine = (props) => {
         data: { values: lprops.info },
         mark: "line",
         encoding: {
-          x: { field: "date", type: "temporal" },
-          y: { field: "newCases", type: "quantitative" },
+          x: { field: "ORDERDATE", type: "temporal" },
+          y: { field: "SALES", type: "quantitative" },
         },
       })}
     </div>
@@ -63,8 +62,8 @@ const VegaBar = (props) => {
         data: { values: nprops.info },
         mark: "bar",
         encoding: {
-          x: { field: "date", type: "temporal" },
-          y: { field: "newCases", type: "quantitative" },
+          x: { field: "ORDERDATE", type: "temporal" },
+          y: { field: "SALES", type: "quantitative" },
         },
       })}
     </div>
@@ -84,7 +83,7 @@ const VegaController = (props) => {
   const [selected, setSelected] = createSignal("bar");
   const newProps = mergeProps(props);
   setAction(newProps.action);
-  setSortDirection(newProps.setSortDirection);
+  setSortDirection(newProps.sortDirection);
 
   setDataLink(
     R.fromPairs([
@@ -95,7 +94,7 @@ const VegaController = (props) => {
           query: newProps.query,
           sort: newProps.sortDirection,
           where: newProps.action,
-          filter: "(Disease.newCases)[[0..20]]",
+          filter: "(Sales.SALES)[[0..20]]",
           dataNode: {},
         },
       ],
@@ -132,12 +131,12 @@ setAction(YAML.parse(qt.value));
       </form>
 
       <Show when={gdata()} fallback={<div>Loading...</div>}>
-        {setDataLink(`${newProps.tag}`, { dataNode: gdata()["Disease"] })}
+        {setDataLink(`${newProps.tag}`, { dataNode: gdata()["Sales"] })}
         <br />
 
         <Dynamic
           component={newProps.chart}
-          info={gdata()["Disease"]}
+          info={gdata()["Sales"]}
           tag={newProps.tag}
         />
       </Show>
@@ -277,19 +276,19 @@ let jdata = Aq.from( gdata()).objects();
         <VegaController
           chart={VegaBar}
           tag={"ivs"}
-          action={{ newCases: { _gte: 0 } }}
-          sortDirection={{ date: "asc" }}
+          action={ { SALES: { _lte: 900 } } }
+          sortDirection={{ ORDERDATE: "asc" }}
           query={gql`
-            query (
-              $sortDirection: [Disease_order_by!]
-              $action: Disease_bool_exp
-            ) {
-              Disease(order_by: $sortDirection, where: $action) {
-                date
-                newCases
-              }
+          query (
+            $sortDirection: [Sales_order_by!]
+            $action: Sales_bool_exp
+          ) {
+            Sales(order_by: $sortDirection, where: $action) {
+              ORDERDATE
+              SALES
             }
-          `}
+          }
+        `}
         />
       </div>
       <div className="pure-u-1-2">
@@ -304,19 +303,19 @@ let jdata = Aq.from( gdata()).objects();
         <VegaController
           chart={VegaLine}
           tag={"vis"}
-          action={{ newCases: { _gte: 300000 } }}
-          sortDirection={{ date: "asc" }}
+          action={ { SALES: { _lte: 900 } }  }
+          sortDirection={{ ORDERDATE: "asc" }}
           query={gql`
-            query (
-              $sortDirection: [Disease_order_by!]
-              $action: Disease_bool_exp
-            ) {
-              Disease(order_by: $sortDirection, where: $action) {
-                date
-                newCases
-              }
+          query (
+            $sortDirection: [Sales_order_by!]
+            $action: Sales_bool_exp
+          ) {
+            Sales(order_by: $sortDirection, where: $action) {
+              ORDERDATE
+              SALES
             }
-          `}
+          }
+        `}
         />
       </div>
     </div>
